@@ -20,6 +20,14 @@ Slaves need this token at install to join the master.
 
 The client *get* option tries to fetch a value from server, and waits until value is available or timeout is reached.
 
+## Requirements
+
+Needs Redis
+
+## Config
+
+See goterra.yml.example
+
 ## How-to
 
 goterra server has an API to:

@@ -1,0 +1,24 @@
+language: go
+sudo: false
+matrix:
+  include:
+  - go: 1.x
+    env: LATEST=true
+  - go: 1.10.x
+  - go: 1.11.x
+script:
+- go vet
+- go test -v ./...
+- if [ "${LATEST}" = "true" ]; then GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Version=`git rev-parse --short HEAD`" -o goterra.linux.amd64 goterra.go;
+  fi
+- if [ "${LATEST}" = "true" ]; then GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Version=`git rev-parse --short HEAD`" -o goterra.darwin.amd64 goterra.go;
+  fi
+- if [ "${LATEST}" = "true" ]; then GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Version=`git rev-parse --short HEAD`" -o goterra.windows.amd64.exe goterra.go;
+  fi
+- if [ "${LATEST}" = "true" ]; then GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Version=`git rev-parse --short HEAD`" -o goterra-cli.linux.amd64 cmd/goterra-cli.go;
+  fi
+- if [ "${LATEST}" = "true" ]; then GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Version=`git rev-parse --short HEAD`" -o goterra-cli.darwin.amd64 cmd/goterra-cli.go;
+  fi
+- if [ "${LATEST}" = "true" ]; then GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Version=`git rev-parse --short HEAD`" -o goterra-cli.windows.amd64.exe cmd/goterra-cli.go;
+  fi 
+

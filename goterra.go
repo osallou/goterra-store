@@ -16,9 +16,11 @@ import (
 	terraDb "github.com/osallou/goterra/lib/db"
 )
 
+var Version string
+
 // HomeHandler manages base entrypoint
 var HomeHandler = func(w http.ResponseWriter, r *http.Request) {
-	resp := map[string]interface{}{"status": 200, "message": "ok"}
+	resp := map[string]interface{}{"version": Version, "message": "ok"}
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
