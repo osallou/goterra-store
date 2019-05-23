@@ -1,5 +1,9 @@
 # Goterra
 
+## Status
+
+In development
+
 ## About
 
 goterra is a server and a client to exchange data in a terraform deployment.
