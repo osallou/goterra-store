@@ -14,8 +14,10 @@ import (
 
 	terraConfig "github.com/osallou/goterra/lib/config"
 	terraDb "github.com/osallou/goterra/lib/db"
+	terraUser "github.com/osallou/goterra/lib/user"
 )
 
+// Version of server
 var Version string
 
 // HomeHandler manages base entrypoint
@@ -35,6 +37,20 @@ type DeploymentData struct {
 type Claims struct {
 	Deployment string `json:"deployment"`
 	jwt.StandardClaims
+}
+
+// CheckApiKey check X-API-Key authorization content and returns user info
+func CheckApiKey(apiKey string) (user terraUser.User, err error) {
+	err = nil
+	if apiKey == "" {
+		user = terraUser.User{ID: "anonymous", Logged: true}
+		// Should set err to errors.New("not logged")
+	} else {
+		// TODO check API Key
+		user = terraUser.User{ID: "todo_checkuser", Logged: true}
+	}
+	log.Printf("[DEBUG] User logged: %s", user.ID)
+	return user, err
 }
 
 // CheckTokenForDeployment checks JWT token and token maps to current deployment
@@ -61,12 +77,20 @@ func CheckTokenForDeployment(authToken string, deployment string) bool {
 
 // DeploymentHandler creates a deployment
 var DeploymentHandler = func(w http.ResponseWriter, r *http.Request) {
+	user, err := CheckApiKey(r.Header.Get("X-API-Key"))
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		respError := map[string]interface{}{"message": "missing api key in X-API-KEY header"}
+		json.NewEncoder(w).Encode(respError)
+		return
+	}
 	config := terraConfig.LoadConfig()
 	dbHandler := terraDb.NewClient(config)
 	id := uuid.New()
 	idStr := id.String()
 	t := time.Now()
-	err := dbHandler.Client.HSet(dbHandler.Prefix+":depl:"+idStr, "ts", t.Unix()).Err()
+	dbHandler.Client.HSet(dbHandler.Prefix+":depl:"+idStr, "user", user.ID).Err()
+	err = dbHandler.Client.HSet(dbHandler.Prefix+":depl:"+idStr, "ts", t.Unix()).Err()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		respError := map[string]interface{}{"message": "failed to generate deployment id"}
