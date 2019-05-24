@@ -1,0 +1,202 @@
+openapi: "3.0.0"
+info:
+  title: GoTerra
+  description: GoTerra Keystore API
+  version: 0.0.1
+  
+servers:
+  - url: http://localhost:8000
+    description: test server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+    JWTToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Login:
+      properties:
+        uid:
+          type: string
+        password:
+          type: string
+    KeyValues:
+      properties:
+        deployment:
+          type: object
+          description: dict of key/value
+
+paths:
+  /:
+    get:
+      summary: base entry point to check service
+      description: check that service is live
+      responses:
+        '200':
+          description: service is up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                  message:
+                    type: string
+                    
+  /deployment:
+    post:
+      security:
+       - ApiKeyAuth: []
+      summary: create a deployment
+      description: create a deployment and returns a deployment id with a JWT to access it
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '200':
+          description: deployment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: service url
+                  token:
+                    type: string
+                    description: JWT token
+                  id:
+                    type: string
+                    description: deployment identifier
+        '500':
+          description: internal error
+        '401':
+          description: invalid api key
+
+  /deployment/{id}:
+    get:
+      security:
+       - JWTToken: []
+      summary: get a deployment data
+      description: get key and related values stored by apps
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: deployment deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyValues'
+        '500':
+          description: internal error
+        '401':
+          description: invalid token
+    put:
+      security:
+       - JWTToken: []
+      summary: set a deployment data
+      description: set or replace a deployment data
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+      responses:
+        '200':
+          description: deployment data updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: internal error
+        '401':
+          description: invalid token
+    delete:
+      security:
+       - JWTToken: []
+      summary: delete a deployment
+      description: cleanup deployment data
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: deployment deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: internal error
+        '401':
+          description: invalid token    
+  /deployment/{id}/{key}:
+    get:
+      security:
+       - JWTToken: []
+      summary: get a deployment data value
+      description: get values related to key
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: key
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: deployment deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  value:
+                    type: string
+        '500':
+          description: internal error
+        '401':
+          description: invalid token
