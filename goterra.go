@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -245,6 +247,10 @@ var DeploymentGetKeysHandler = func(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	var configFilePath string
+	flag.StringVar(&configFilePath, "config", os.Getenv("GOT_CONFIG"), "configuration file path")
+	flag.Parse()
+	terraConfig.ConfigFile = configFilePath
 
 	config := terraConfig.LoadConfig()
 

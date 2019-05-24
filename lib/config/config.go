@@ -2,6 +2,7 @@ package terraconfig
 
 import (
 	"io/ioutil"
+	"log"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -31,12 +32,20 @@ type Config struct {
 // Singleton config
 var cfg Config
 
+// ConfigFile config file path
+var ConfigFile string
+
 // LoadConfig returns the singleton config object
 func LoadConfig() Config {
 	if cfg.loaded {
 		return cfg
 	}
-	cfgfile, _ := ioutil.ReadFile("goterra.yml")
+	if ConfigFile == "" {
+		ConfigFile = "goterra.yml"
+	}
+	log.Printf("Using config file %s\n", ConfigFile)
+
+	cfgfile, _ := ioutil.ReadFile(ConfigFile)
 	config := Config{loaded: true}
 	yaml.Unmarshal([]byte(cfgfile), &config)
 	// fmt.Printf("Config: %+v\n", config)
