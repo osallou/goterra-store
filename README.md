@@ -20,6 +20,10 @@ Slaves need this token at install to join the master.
 
 The client *get* option tries to fetch a value from server, and waits until value is available or timeout is reached.
 
+## License
+
+Apache 2.0
+
 ## Requirements
 
 Needs Redis
