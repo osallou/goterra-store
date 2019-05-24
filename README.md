@@ -54,6 +54,12 @@ See goterra-cli usage
 
     goterra-cli -h
 
+## Server
+
+Expect goterra.yml in same directory
+
+    goterra
+
 ## TODO
 
 Add API to renew token before expiration
