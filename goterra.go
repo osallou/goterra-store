@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	terraConfig "github.com/osallou/goterra/lib/config"
@@ -37,19 +39,31 @@ type DeploymentData struct {
 
 // Claims contains JWT claims
 type Claims struct {
-	Deployment string `json:"deployment"`
+	Deployment string          `json:"deployment"`
+	UID        string          `json:"uid"`
+	Admin      bool            `json:"admin"`
+	UserNS     map[string]bool `json:"userns"` // map of namespace names, if true user is owner of namespace else only a member
+	Namespace  string          `json:"namespace"`
 	jwt.StandardClaims
 }
 
-// CheckApiKey check X-API-Key authorization content and returns user info
-func CheckApiKey(apiKey string) (user terraUser.User, err error) {
+// CheckAPIKey check X-API-Key authorization content and returns user info
+func CheckAPIKey(apiKey string) (user terraUser.User, err error) {
 	err = nil
+	user = terraUser.User{}
 	if apiKey == "" {
-		user = terraUser.User{ID: "anonymous", Logged: true}
-		// Should set err to errors.New("not logged")
+		if os.Getenv("GOT_FEAT_ANONYMOUS") == "1" {
+			user = terraUser.User{ID: "anonymous", Logged: true}
+		} else {
+			err = errors.New("missing X-API-Key")
+		}
 	} else {
-		// TODO check API Key
-		user = terraUser.User{ID: "todo_checkuser", Logged: true}
+		user, tauthErr := terraUser.Check(apiKey)
+		if tauthErr != nil {
+			err = errors.New("invalid api key")
+		} else {
+			user.Logged = true
+		}
 	}
 	log.Printf("[DEBUG] User logged: %s", user.ID)
 	return user, err
@@ -57,7 +71,6 @@ func CheckApiKey(apiKey string) (user terraUser.User, err error) {
 
 // CheckTokenForDeployment checks JWT token and token maps to current deployment
 func CheckTokenForDeployment(authToken string, deployment string) bool {
-	// TODO
 	config := terraConfig.LoadConfig()
 
 	tokenStr := strings.Replace(authToken, "Bearer", "", -1)
@@ -70,19 +83,21 @@ func CheckTokenForDeployment(authToken string, deployment string) bool {
 		fmt.Printf("Token error: %v\n", err)
 		return false
 	}
-	if claims.Deployment != deployment {
-		fmt.Printf("Trying to access a different deployment %s from %s\n", deployment, claims.Deployment)
-		return false
+	if !claims.Admin {
+		if claims.Deployment != deployment {
+			fmt.Printf("Trying to access a different deployment %s from %s\n", deployment, claims.Deployment)
+			return false
+		}
 	}
 	return true
 }
 
 // DeploymentHandler creates a deployment
 var DeploymentHandler = func(w http.ResponseWriter, r *http.Request) {
-	user, err := CheckApiKey(r.Header.Get("X-API-Key"))
+	user, err := CheckAPIKey(r.Header.Get("X-API-Key"))
 	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
-		respError := map[string]interface{}{"message": "missing api key in X-API-KEY header"}
+		respError := map[string]interface{}{"message": fmt.Sprintf("Auth error: %s", err)}
 		json.NewEncoder(w).Encode(respError)
 		return
 	}
@@ -92,6 +107,9 @@ var DeploymentHandler = func(w http.ResponseWriter, r *http.Request) {
 	idStr := id.String()
 	t := time.Now()
 	dbHandler.Client.HSet(dbHandler.Prefix+":depl:"+idStr, "user", user.ID).Err()
+	if r.Header.Get("X-API-NS") != "" {
+		dbHandler.Client.HSet(dbHandler.Prefix+":depl:"+idStr, "ns", r.Header.Get("X-API-NS")).Err()
+	}
 	err = dbHandler.Client.HSet(dbHandler.Prefix+":depl:"+idStr, "ts", t.Unix()).Err()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -104,6 +122,9 @@ var DeploymentHandler = func(w http.ResponseWriter, r *http.Request) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
 		Deployment: idStr,
+		UID:        user.ID,
+		Admin:      user.Admin,
+		UserNS:     user.Namespaces,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 			Audience:  "goterra/deployment",
@@ -262,8 +283,10 @@ func main() {
 	r.HandleFunc("/deployment/{deployment}", DeploymentDeleteHandler).Methods("DELETE")
 	r.HandleFunc("/deployment/{deployment}/{key}", DeploymentGetHandler).Methods("GET")
 
+	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
+
 	srv := &http.Server{
-		Handler: r,
+		Handler: loggedRouter,
 		Addr:    fmt.Sprintf("%s:%d", config.Web.Listen, config.Web.Port),
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,

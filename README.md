@@ -66,4 +66,17 @@ Expect goterra.yml in same directory
 
 ## TODO
 
-Add API to renew token before expiration
+* Add API to renew token before expiration
+* If namespace set at deployment create (X-API-NS), allow namespace owners to access deployment data
+* Allow to get a token (for namespace owners) without creating a deployment for later access to data
+
+## Env setup
+
+Expects some env variables
+
+* GOT_PROXY: default proxy URL to route requests between micro services (traefik, ...)
+* GOT_PROXY_AUTH: specific URL to route to auth service if not using general proxy
+
+Feature flags
+
+* GOT_FEAT_ANONYMOUS: set to 1 if anonymous access is allowed, default: none
