@@ -16,9 +16,9 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
-	terraConfig "github.com/osallou/goterra/lib/config"
+	terraConfig "github.com/osallou/goterra-lib/lib/config"
+	terraUser "github.com/osallou/goterra-lib/lib/user"
 	terraDb "github.com/osallou/goterra/lib/db"
-	terraUser "github.com/osallou/goterra/lib/user"
 )
 
 // Version of server
@@ -53,7 +53,7 @@ func CheckAPIKey(apiKey string) (user terraUser.User, err error) {
 	user = terraUser.User{}
 	if apiKey == "" {
 		if os.Getenv("GOT_FEAT_ANONYMOUS") == "1" {
-			user = terraUser.User{ID: "anonymous", Logged: true}
+			user = terraUser.User{UID: "anonymous", Logged: true}
 		} else {
 			err = errors.New("missing X-API-Key")
 		}
@@ -65,7 +65,7 @@ func CheckAPIKey(apiKey string) (user terraUser.User, err error) {
 			user.Logged = true
 		}
 	}
-	log.Printf("[DEBUG] User logged: %s", user.ID)
+	log.Printf("[DEBUG] User logged: %s", user.UID)
 	return user, err
 }
 
@@ -106,7 +106,7 @@ var DeploymentHandler = func(w http.ResponseWriter, r *http.Request) {
 	id := uuid.New()
 	idStr := id.String()
 	t := time.Now()
-	dbHandler.Client.HSet(dbHandler.Prefix+":depl:"+idStr, "user", user.ID).Err()
+	dbHandler.Client.HSet(dbHandler.Prefix+":depl:"+idStr, "user", user.UID).Err()
 	if r.Header.Get("X-API-NS") != "" {
 		dbHandler.Client.HSet(dbHandler.Prefix+":depl:"+idStr, "ns", r.Header.Get("X-API-NS")).Err()
 	}
@@ -122,9 +122,9 @@ var DeploymentHandler = func(w http.ResponseWriter, r *http.Request) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
 		Deployment: idStr,
-		UID:        user.ID,
+		UID:        user.UID,
 		Admin:      user.Admin,
-		UserNS:     user.Namespaces,
+		// UserNS:     user.Namespaces,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 			Audience:  "goterra/deployment",

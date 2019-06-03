@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-redis/redis"
 
-	terraConfig "github.com/osallou/goterra/lib/config"
+	terraConfig "github.com/osallou/goterra-lib/lib/config"
 )
 
 var client DbHandler

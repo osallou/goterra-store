@@ -55,6 +55,13 @@ paths:
        - ApiKeyAuth: []
       summary: create a deployment
       description: create a deployment and returns a deployment id with a JWT to access it
+      parameters:
+        - in: headers
+          name: X-API-NS
+          schema:
+            type: string
+          optional: true
+          description: optional namespace name
       requestBody:
         required: true
         content:
