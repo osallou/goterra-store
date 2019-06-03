@@ -31,11 +31,12 @@ type Deployment struct {
 	Token string `json:"token"`
 }
 
+// Version is the current version of software
 var Version string
 
 func getValue(options Options, key string) bool {
 	client := &http.Client{}
-	remote := []string{*options.url, "deployment", *options.deployment, key}
+	remote := []string{*options.url, "store", *options.deployment, key}
 	req, _ := http.NewRequest("GET", strings.Join(remote, "/"), nil)
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *options.token))
 	req.Header.Add("Content-Type", "application/json")
@@ -47,13 +48,12 @@ func getValue(options Options, key string) bool {
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return true
-	} else {
-		// fmt.Printf("Answer: %s", resp.Body)
-		respData := &DeploymentData{}
-		json.NewDecoder(resp.Body).Decode(respData)
-		fmt.Printf("%s=%s\n", respData.Key, respData.Value)
-		return false
 	}
+	respData := &DeploymentData{}
+	json.NewDecoder(resp.Body).Decode(respData)
+	fmt.Printf("%s=%s\n", respData.Key, respData.Value)
+	return false
+
 }
 
 func putValue(options Options, key string, value string) bool {
@@ -61,7 +61,7 @@ func putValue(options Options, key string, value string) bool {
 	data := &DeploymentData{Key: key, Value: value}
 	jsonValue, _ := json.Marshal(data)
 	jsonData := bytes.NewBuffer(jsonValue)
-	remote := []string{*options.url, "deployment", *options.deployment}
+	remote := []string{*options.url, "store", *options.deployment}
 	req, _ := http.NewRequest("PUT", strings.Join(remote, "/"), jsonData)
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *options.token))
 	req.Header.Add("Content-Type", "application/json")
@@ -74,14 +74,13 @@ func putValue(options Options, key string, value string) bool {
 	if resp.StatusCode != 200 {
 		fmt.Printf("failed to update deployment %d\n", resp.StatusCode)
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 func create(options Options) bool {
 	client := &http.Client{}
-	remote := []string{*options.url, "deployment"}
+	remote := []string{*options.url, "store"}
 	byteData := make([]byte, 0)
 	req, _ := http.NewRequest("POST", strings.Join(remote, "/"), bytes.NewReader(byteData))
 	req.Header.Add("Content-Type", "application/json")
@@ -94,14 +93,14 @@ func create(options Options) bool {
 	if resp.StatusCode != 200 {
 		fmt.Printf("failed to create deployment %d\n", resp.StatusCode)
 		return true
-	} else {
-		respData := &Deployment{}
-		json.NewDecoder(resp.Body).Decode(respData)
-		fmt.Printf("url=%s\n", respData.URL)
-		fmt.Printf("id=%s\n", respData.ID)
-		fmt.Printf("token=%s\n", respData.Token)
-		return false
 	}
+	respData := &Deployment{}
+	json.NewDecoder(resp.Body).Decode(respData)
+	fmt.Printf("url=%s\n", respData.URL)
+	fmt.Printf("id=%s\n", respData.ID)
+	fmt.Printf("token=%s\n", respData.Token)
+	return false
+
 }
 
 func main() {

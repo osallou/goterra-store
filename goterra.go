@@ -276,12 +276,12 @@ func main() {
 	config := terraConfig.LoadConfig()
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", HomeHandler).Methods("GET")
-	r.HandleFunc("/deployment", DeploymentHandler).Methods("POST")
-	r.HandleFunc("/deployment/{deployment}", DeploymentUpdateHandler).Methods("PUT")
-	r.HandleFunc("/deployment/{deployment}", DeploymentGetKeysHandler).Methods("GET")
-	r.HandleFunc("/deployment/{deployment}", DeploymentDeleteHandler).Methods("DELETE")
-	r.HandleFunc("/deployment/{deployment}/{key}", DeploymentGetHandler).Methods("GET")
+	r.HandleFunc("/store", HomeHandler).Methods("GET")
+	r.HandleFunc("/store", DeploymentHandler).Methods("POST")
+	r.HandleFunc("/store/{deployment}", DeploymentUpdateHandler).Methods("PUT")
+	r.HandleFunc("/store/{deployment}", DeploymentGetKeysHandler).Methods("GET")
+	r.HandleFunc("/store/{deployment}", DeploymentDeleteHandler).Methods("DELETE")
+	r.HandleFunc("/store/{deployment}/{key}", DeploymentGetHandler).Methods("GET")
 
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 

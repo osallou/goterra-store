@@ -31,8 +31,8 @@ components:
           type: object
           description: dict of key/value
 
-paths:
-  /:
+paths:                   
+  /store:
     get:
       summary: base entry point to check service
       description: check that service is live
@@ -48,8 +48,6 @@ paths:
                     type: string
                   message:
                     type: string
-                    
-  /deployment:
     post:
       security:
        - ApiKeyAuth: []
@@ -90,7 +88,7 @@ paths:
         '401':
           description: invalid api key
 
-  /deployment/{id}:
+  /store/{id}:
     get:
       security:
        - JWTToken: []
@@ -174,7 +172,7 @@ paths:
           description: internal error
         '401':
           description: invalid token    
-  /deployment/{id}/{key}:
+  /store/{id}/{key}:
     get:
       security:
        - JWTToken: []
