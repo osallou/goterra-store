@@ -17,8 +17,8 @@ import (
 	"github.com/gorilla/mux"
 
 	terraConfig "github.com/osallou/goterra-lib/lib/config"
+	terraDb "github.com/osallou/goterra-lib/lib/db"
 	terraUser "github.com/osallou/goterra-lib/lib/user"
-	terraDb "github.com/osallou/goterra/lib/db"
 )
 
 // Version of server
@@ -33,8 +33,8 @@ var HomeHandler = func(w http.ResponseWriter, r *http.Request) {
 
 // DeploymentData represents data sent to update a deployment value
 type DeploymentData struct {
-	Key   string
-	Value string
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 // Claims contains JWT claims
