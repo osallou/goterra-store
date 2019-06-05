@@ -51,7 +51,7 @@ func getValue(options Options, key string) bool {
 	}
 	respData := &DeploymentData{}
 	json.NewDecoder(resp.Body).Decode(respData)
-	fmt.Printf("%s=%s\n", respData.Key, respData.Value)
+	fmt.Printf("%s\n", respData.Value)
 	return false
 
 }
