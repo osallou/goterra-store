@@ -10,11 +10,11 @@ script:
 - go vet
 - go test -v ./...
 - if [ "${LATEST}" = "true" ]; then GOOS=linux GOARCH=amd64 go build -ldflags "-X
-  main.Version=`git rev-parse --short HEAD`" -o goterra.linux.amd64 goterra.go; fi
+  main.Version=`git rev-parse --short HEAD`" -o goterra-store.linux.amd64 goterra-store.go; fi
 - if [ "${LATEST}" = "true" ]; then GOOS=darwin GOARCH=amd64 go build -ldflags "-X
-  main.Version=`git rev-parse --short HEAD`" -o goterra.darwin.amd64 goterra.go; fi
+  main.Version=`git rev-parse --short HEAD`" -o goterra-store.darwin.amd64 goterra-store.go; fi
 - if [ "${LATEST}" = "true" ]; then GOOS=windows GOARCH=amd64 go build -ldflags "-X
-  main.Version=`git rev-parse --short HEAD`" -o goterra.windows.amd64.exe goterra.go;
+  main.Version=`git rev-parse --short HEAD`" -o goterra-store.windows.amd64.exe goterra-store.go;
   fi
 - if [ "${LATEST}" = "true" ]; then GOOS=linux GOARCH=amd64 go build -ldflags "-X
   main.Version=`git rev-parse --short HEAD`" -o goterra-cli.linux.amd64 cmd/goterra-cli.go;

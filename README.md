@@ -1,4 +1,4 @@
-# Goterra
+# Goterra-store
 
 ## Status
 
@@ -30,7 +30,7 @@ Needs Redis
 
 ## Config
 
-See goterra.yml.example
+See goterra-store.yml.example
 
 ## How-to
 
@@ -60,9 +60,9 @@ See goterra-cli usage
 
 ## Server
 
-Expect goterra.yml in same directory
+Expect goterra-store.yml in same directory
 
-    goterra
+    goterra-store
 
 ## TODO
 

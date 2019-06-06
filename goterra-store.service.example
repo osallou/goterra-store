@@ -1,12 +1,12 @@
 [Unit]
-Description=goterra
+Description=goterra-store
 
 [Service]
 Type=simple
 Restart=always
 RestartSec=5s
 WorkingDirectory=path_to_goterra
-ExecStart=path_to_goterra/goterra
+ExecStart=path_to_goterra/goterra-store
 
 [Install]
 WantedBy=multi-user.target

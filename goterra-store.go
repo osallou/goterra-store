@@ -275,6 +275,12 @@ func main() {
 
 	config := terraConfig.LoadConfig()
 
+	consulErr := terraConfig.ConsulDeclare("got-store", "/store")
+	if consulErr != nil {
+		fmt.Printf("Failed to register: %s", consulErr.Error())
+		panic(consulErr)
+	}
+
 	r := mux.NewRouter()
 	r.HandleFunc("/store", HomeHandler).Methods("GET")
 	r.HandleFunc("/store", DeploymentHandler).Methods("POST")
