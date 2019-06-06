@@ -58,7 +58,9 @@ func CheckAPIKey(apiKey string) (user terraUser.User, err error) {
 			err = errors.New("missing X-API-Key")
 		}
 	} else {
-		user, tauthErr := terraUser.Check(apiKey)
+		var tauthErr error
+		user, tauthErr = terraUser.Check(apiKey)
+
 		if tauthErr != nil {
 			err = errors.New("invalid api key")
 		} else {
@@ -67,6 +69,26 @@ func CheckAPIKey(apiKey string) (user terraUser.User, err error) {
 	}
 	log.Printf("[DEBUG] User logged: %s", user.UID)
 	return user, err
+}
+
+// checkAPIKeyAdminOrOwner cehcks that api key is valid and user is admin or owner of deployment
+func checkAPIKeyAdminOrOwner(apikey string, deployment string) bool {
+	isAdminOrOwner := false
+	if apikey != "" || deployment == "" {
+		user, err := CheckAPIKey(apikey)
+		if err == nil {
+			if user.Admin {
+				isAdminOrOwner = true
+			}
+			config := terraConfig.LoadConfig()
+			dbHandler := terraDb.NewClient(config)
+			value, err := dbHandler.Client.HGet(dbHandler.Prefix+":depl:"+deployment, "user").Result()
+			if err != nil && value == user.UID {
+				isAdminOrOwner = true
+			}
+		}
+	}
+	return isAdminOrOwner
 }
 
 // CheckTokenForDeployment checks JWT token and token maps to current deployment
@@ -144,7 +166,9 @@ var DeploymentDeleteHandler = func(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	if !CheckTokenForDeployment(r.Header.Get("Authorization"), vars["deployment"]) {
+	isAdminOrOwner := checkAPIKeyAdminOrOwner(r.Header.Get("X-API-Key"), vars["deployment"])
+
+	if !isAdminOrOwner && !CheckTokenForDeployment(r.Header.Get("Authorization"), vars["deployment"]) {
 		w.WriteHeader(http.StatusForbidden)
 		w.Header().Add("Content-Type", "application/json")
 		respError := map[string]interface{}{"message": "not authorized"}
@@ -180,7 +204,9 @@ var DeploymentUpdateHandler = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !CheckTokenForDeployment(r.Header.Get("Authorization"), vars["deployment"]) {
+	isAdminOrOwner := checkAPIKeyAdminOrOwner(r.Header.Get("X-API-Key"), vars["deployment"])
+
+	if !isAdminOrOwner && !CheckTokenForDeployment(r.Header.Get("Authorization"), vars["deployment"]) {
 		w.WriteHeader(http.StatusForbidden)
 		w.Header().Add("Content-Type", "application/json")
 		respError := map[string]interface{}{"message": "not authorized"}
@@ -217,7 +243,9 @@ var DeploymentUpdateHandler = func(w http.ResponseWriter, r *http.Request) {
 var DeploymentGetHandler = func(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	if !CheckTokenForDeployment(r.Header.Get("Authorization"), vars["deployment"]) {
+	isAdminOrOwner := checkAPIKeyAdminOrOwner(r.Header.Get("X-API-Key"), vars["deployment"])
+
+	if !isAdminOrOwner && !CheckTokenForDeployment(r.Header.Get("Authorization"), vars["deployment"]) {
 		w.WriteHeader(http.StatusForbidden)
 		w.Header().Add("Content-Type", "application/json")
 		respError := map[string]interface{}{"message": "not authorized"}
@@ -244,7 +272,9 @@ var DeploymentGetHandler = func(w http.ResponseWriter, r *http.Request) {
 var DeploymentGetKeysHandler = func(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	if !CheckTokenForDeployment(r.Header.Get("Authorization"), vars["deployment"]) {
+	isAdminOrOwner := checkAPIKeyAdminOrOwner(r.Header.Get("X-API-Key"), vars["deployment"])
+
+	if !isAdminOrOwner && !CheckTokenForDeployment(r.Header.Get("Authorization"), vars["deployment"]) {
 		w.WriteHeader(http.StatusForbidden)
 		w.Header().Add("Content-Type", "application/json")
 		respError := map[string]interface{}{"message": "not authorized"}
@@ -284,6 +314,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/store", HomeHandler).Methods("GET")
 	r.HandleFunc("/store", DeploymentHandler).Methods("POST")
+	r.HandleFunc("/store/{deployment}", DeploymentGetKeysHandler).Methods("GET")
 	r.HandleFunc("/store/{deployment}", DeploymentUpdateHandler).Methods("PUT")
 	r.HandleFunc("/store/{deployment}", DeploymentGetKeysHandler).Methods("GET")
 	r.HandleFunc("/store/{deployment}", DeploymentDeleteHandler).Methods("DELETE")

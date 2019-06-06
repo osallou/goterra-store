@@ -92,6 +92,7 @@ paths:
     get:
       security:
        - JWTToken: []
+       - ApiKeyAuth: []
       summary: get a deployment data
       description: get key and related values stored by apps
       parameters:
@@ -114,6 +115,7 @@ paths:
     put:
       security:
        - JWTToken: []
+       - ApiKeyAuth: []
       summary: set a deployment data
       description: set or replace a deployment data
       parameters:
@@ -150,6 +152,7 @@ paths:
     delete:
       security:
        - JWTToken: []
+       - ApiKeyAuth: []
       summary: delete a deployment
       description: cleanup deployment data
       parameters:
@@ -176,6 +179,7 @@ paths:
     get:
       security:
        - JWTToken: []
+       - ApiKeyAuth: []
       summary: get a deployment data value
       description: get values related to key
       parameters:
