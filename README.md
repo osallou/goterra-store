@@ -26,7 +26,7 @@ Apache 2.0
 
 ## Requirements
 
-Needs Redis
+Needs Redis, goterra-auth if anonymous usage not enabled
 
 ## Config
 
