@@ -5,11 +5,18 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"math"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
+
+// MAXFILESIZE is the maximum size of file to be read
+// If env variable GOT_TRIM=XXX, read last XXX bytes of file
+const MAXFILESIZE int64 = 10000000
 
 // Options to connect to goterra
 type Options struct {
@@ -58,7 +65,58 @@ func getValue(options Options, key string) bool {
 
 func putValue(options Options, key string, value string) bool {
 	client := &http.Client{}
-	data := &DeploymentData{Key: key, Value: value}
+	dataToSet := value
+	if strings.HasPrefix(value, "@") {
+		// this is a file
+		filePath := strings.Replace(value, "@", "", 1)
+		stat, err := os.Stat(filePath)
+		fileData := make([]byte, 0)
+		if err != nil {
+			fmt.Printf("could not read file %s, %s", value, err)
+			return false
+		}
+		// Arbitrary max size
+		if stat.Size() > MAXFILESIZE || os.Getenv("GOT_TRIM") != "" {
+			trim := float64(MAXFILESIZE)
+			if os.Getenv("GOT_TRIM") != "" {
+				var trimErr error
+				trim, trimErr = strconv.ParseFloat(os.Getenv("GOT_TRIM"), 64)
+				if trimErr != nil {
+					trim = float64(MAXFILESIZE)
+				}
+			}
+			max := math.Min(float64(MAXFILESIZE), trim)
+			fmt.Printf("read only partial file %s: last %f bytes", filePath, max)
+
+			buf := make([]byte, int64(max))
+			start := stat.Size() - int64(max)
+			if start < 0 {
+				// trying to trim, but file is lower than trim value, take whole file
+				start = 0
+				buf = make([]byte, stat.Size())
+			}
+			file, fileErr := os.Open(filePath)
+			if fileErr != nil {
+				fmt.Printf("could not read file %s, %s", value, fileErr)
+				return false
+			}
+			_, readErr := file.ReadAt(buf, start)
+			if err == nil {
+				fileData = buf
+			} else {
+				fmt.Printf("could not read file %s, %s", value, readErr)
+				return false
+			}
+		} else {
+			fileData, err = ioutil.ReadFile(filePath)
+			if err != nil {
+				fmt.Printf("could not read file %s, %s", value, err)
+				return false
+			}
+		}
+		dataToSet = fmt.Sprintf("%s", fileData)
+	}
+	data := &DeploymentData{Key: key, Value: dataToSet}
 	jsonValue, _ := json.Marshal(data)
 	jsonData := bytes.NewBuffer(jsonValue)
 	remote := []string{*options.url, "store", *options.deployment}
@@ -154,7 +212,7 @@ Examples:
 	err := false
 	switch tail[0] {
 	case "get":
-		key := tail[1]
+		key := strings.TrimSpace(tail[1])
 		err := true
 		now := time.Now()
 		timeoutAt := time.Now().Add(time.Duration(timeout) * time.Minute)
@@ -175,8 +233,8 @@ Examples:
 		}
 
 	case "put":
-		key := tail[1]
-		value := tail[2]
+		key := strings.TrimSpace(tail[1])
+		value := strings.TrimSpace(tail[2])
 		err = putValue(options, key, value)
 
 	case "create":
