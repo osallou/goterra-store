@@ -13,7 +13,7 @@ components:
     ApiKeyAuth:
       type: apiKey
       in: header
-      name: X-API-KEY
+      name: X-API-Key
     JWTToken:
       type: http
       scheme: bearer
