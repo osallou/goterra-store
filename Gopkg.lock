@@ -18,6 +18,14 @@
   version = "v3.2.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:660e6c59164572d31b7983efcddc8584a112fdf7cdd23b02417a1db16be2990d"
+  name = "github.com/fernet/fernet-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "9eac43b88a5efb8651d24de9b68e87567e029736"
+
+[[projects]]
   digest = "1:c950e574951c7199fb3d990d0e7a61996f40f8e646ba7cf8a557878d4c737f53"
   name = "github.com/go-redis/redis"
   packages = [
@@ -82,12 +90,12 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:a54ada9beb59fdc35b69322979e870ff0b780e03f4dc309c4c8674b94927df75"
+  digest = "1:7b893c9e1181e224506c523777dea0d16f4bd20a7627b100cc800e14229f405c"
   name = "github.com/hashicorp/go-rootcerts"
   packages = ["."]
   pruneopts = "UT"
-  revision = "63503fb4e1eca22f9ae0f90b49c5d5538a0e87eb"
-  version = "v1.0.0"
+  revision = "df8e78a645e18d56ed7bb9ae10ffb8174ab892e2"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:67474f760e9ac3799f740db2c489e6423a4cde45520673ec123ac831ad849cb8"
@@ -123,15 +131,16 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b4dc385b80318100a8d5807e2916e56cf1b1c2837177b9eb093496b8443217e3"
+  digest = "1:2e7d3c455d5fe2cbf40cf952bc920165a5ea8bc5458cd3a0cec820397a30a50d"
   name = "github.com/osallou/goterra-lib"
   packages = [
     "lib/config",
     "lib/db",
+    "lib/token",
     "lib/user",
   ]
   pruneopts = "UT"
-  revision = "115dbc3f4b535c63c8e281e1be0ab84f5276bfd1"
+  revision = "36970e48d3f1189d9e09b1976563d7bcf3ba5a2c"
 
 [[projects]]
   digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
@@ -151,6 +160,7 @@
     "github.com/gorilla/mux",
     "github.com/osallou/goterra-lib/lib/config",
     "github.com/osallou/goterra-lib/lib/db",
+    "github.com/osallou/goterra-lib/lib/token",
     "github.com/osallou/goterra-lib/lib/user",
   ]
   solver-name = "gps-cdcl"

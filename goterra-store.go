@@ -18,6 +18,7 @@ import (
 
 	terraConfig "github.com/osallou/goterra-lib/lib/config"
 	terraDb "github.com/osallou/goterra-lib/lib/db"
+	terraToken "github.com/osallou/goterra-lib/lib/token"
 	terraUser "github.com/osallou/goterra-lib/lib/user"
 )
 
@@ -39,84 +40,99 @@ type DeploymentData struct {
 
 // Claims contains JWT claims
 type Claims struct {
-	Deployment string          `json:"deployment"`
-	UID        string          `json:"uid"`
-	Admin      bool            `json:"admin"`
-	UserNS     map[string]bool `json:"userns"` // map of namespace names, if true user is owner of namespace else only a member
-	Namespace  string          `json:"namespace"`
+	// Deployment string          `json:"deployment"`
+	UID       string          `json:"uid"`
+	Admin     bool            `json:"admin"`
+	UserNS    map[string]bool `json:"userns"` // map of namespace names, if true user is owner of namespace else only a member
+	Namespace string          `json:"namespace"`
 	jwt.StandardClaims
 }
 
 // CheckAPIKey check X-API-Key authorization content and returns user info
-func CheckAPIKey(apiKey string) (user terraUser.User, err error) {
+func CheckAPIKey(apiKey string) (data terraUser.AuthData, err error) {
 	err = nil
-	user = terraUser.User{}
 	if apiKey == "" {
-		if os.Getenv("GOT_FEAT_ANONYMOUS") == "1" {
-			user = terraUser.User{UID: "anonymous", Logged: true}
+		return data, errors.New("no api key provided")
+	}
+
+	data = terraUser.AuthData{}
+	if os.Getenv("GOT_FEAT_ANONYMOUS") == "1" {
+		user := terraUser.User{UID: apiKey, Logged: true}
+		userJSON, _ := json.Marshal(user)
+		data.User = user
+		token, tokenErr := terraToken.FernetEncode(userJSON)
+		if tokenErr != nil {
+			err = errors.New("failed to create token")
 		} else {
-			err = errors.New("missing X-API-Key")
+			data.Token = token
 		}
 	} else {
 		var tauthErr error
-		user, tauthErr = terraUser.Check(apiKey)
+		data, tauthErr = terraUser.Check(apiKey)
 
 		if tauthErr != nil {
-			err = errors.New("invalid api key")
-		} else {
-			user.Logged = true
+			err = fmt.Errorf("invalid api key: %s", tauthErr)
+			return data, err
 		}
+		data.User.Logged = true
+
 	}
-	log.Printf("[DEBUG] User logged: %s", user.UID)
-	return user, err
+	log.Printf("[DEBUG] User logged: %s", data.User.UID)
+	return data, err
 }
 
-// checkAPIKeyAdminOrOwner cehcks that api key is valid and user is admin or owner of deployment
+// checkAPIKeyAdminOrOwner checks that api key is valid and user is admin or owner of deployment
 func checkAPIKeyAdminOrOwner(apikey string, deployment string) bool {
 	isAdminOrOwner := false
-	if apikey != "" || deployment == "" {
-		user, err := CheckAPIKey(apikey)
+	if apikey != "" && deployment != "" {
+		data, err := CheckAPIKey(apikey)
 		if err == nil {
+			user := data.User
 			if user.Admin {
 				isAdminOrOwner = true
+				return isAdminOrOwner
 			}
 			config := terraConfig.LoadConfig()
 			dbHandler := terraDb.NewClient(config)
 			value, err := dbHandler.Client.HGet(dbHandler.Prefix+":depl:"+deployment, "user").Result()
 			if err != nil && value == user.UID {
 				isAdminOrOwner = true
+				return isAdminOrOwner
 			}
 		}
 	}
 	return isAdminOrOwner
 }
 
-// CheckTokenForDeployment checks JWT token and token maps to current deployment
+// CheckTokenForDeployment checks token and token user maps to current deployment owner
 func CheckTokenForDeployment(authToken string, deployment string) bool {
-	config := terraConfig.LoadConfig()
+	// config := terraConfig.LoadConfig()
 
 	tokenStr := strings.Replace(authToken, "Bearer", "", -1)
 	tokenStr = strings.TrimSpace(tokenStr)
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(config.Secret), nil
-	})
-	if err != nil || !token.Valid || claims.Audience != "goterra/deployment" {
+
+	userJSON, err := terraToken.FernetDecode([]byte(tokenStr))
+	if err != nil {
 		fmt.Printf("Token error: %v\n", err)
 		return false
 	}
-	if !claims.Admin {
-		if claims.Deployment != deployment {
-			fmt.Printf("Trying to access a different deployment %s from %s\n", deployment, claims.Deployment)
-			return false
-		}
+	user := terraUser.User{}
+	json.Unmarshal(userJSON, &user)
+	config := terraConfig.LoadConfig()
+	dbHandler := terraDb.NewClient(config)
+	value, err := dbHandler.Client.HGet(dbHandler.Prefix+":depl:"+deployment, "user").Result()
+	if err == nil && value == user.UID {
+		return true
 	}
-	return true
+	return false
+
 }
 
 // DeploymentHandler creates a deployment
 var DeploymentHandler = func(w http.ResponseWriter, r *http.Request) {
-	user, err := CheckAPIKey(r.Header.Get("X-API-Key"))
+	data, err := CheckAPIKey(r.Header.Get("X-API-Key"))
+	user := data.User
+	token := data.Token
 	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
 		respError := map[string]interface{}{"message": fmt.Sprintf("Auth error: %s", err)}
@@ -139,23 +155,9 @@ var DeploymentHandler = func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(respError)
 		return
 	}
-	mySigningKey := []byte(config.Secret)
 
-	expirationTime := time.Now().Add(24 * time.Hour)
-	claims := &Claims{
-		Deployment: idStr,
-		UID:        user.UID,
-		Admin:      user.Admin,
-		// UserNS:     user.Namespaces,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-			Audience:  "goterra/deployment",
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, _ := token.SignedString(mySigningKey)
 	w.Header().Add("Content-Type", "application/json")
-	resp := map[string]interface{}{"url": config.URL, "id": idStr, "token": tokenString}
+	resp := map[string]interface{}{"url": config.URL, "id": idStr, "token": token}
 	json.NewEncoder(w).Encode(resp)
 }
 
