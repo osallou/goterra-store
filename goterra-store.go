@@ -64,7 +64,7 @@ func CheckAPIKey(apiKey string) (data terraUser.AuthData, err error) {
 		if tokenErr != nil {
 			err = errors.New("failed to create token")
 		} else {
-			data.Token = token
+			data.Token = string(token)
 		}
 	} else {
 		var tauthErr error
