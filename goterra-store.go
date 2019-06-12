@@ -116,6 +116,7 @@ func CheckTokenForDeployment(authToken string, deployment string) bool {
 		fmt.Printf("Token error: %v\n", err)
 		return false
 	}
+
 	user := terraUser.User{}
 	json.Unmarshal(userJSON, &user)
 	config := terraConfig.LoadConfig()
