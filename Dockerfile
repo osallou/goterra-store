@@ -12,7 +12,7 @@ RUN go get -u github.com/golang/dep/cmd/dep
 RUN dep ensure
 
 # Install the package
-RUN go build goterra-store.go
+RUN go build -ldflags "-X  main.Version=`git rev-parse --short HEAD`" goterra-store.go
 RUN cp goterra-store.yml.example goterra.yml
 
 FROM alpine:latest  
