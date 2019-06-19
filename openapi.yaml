@@ -54,11 +54,10 @@ paths:
       summary: create a deployment
       description: create a deployment and returns a deployment id with a JWT to access it
       parameters:
-        - in: headers
+        - in: header
           name: X-API-NS
           schema:
             type: string
-          optional: true
           description: optional namespace name
       requestBody:
         required: true
@@ -99,6 +98,12 @@ paths:
         - in: path
           name: id
           required: true
+          schema:
+            type: string
+        - in: query
+          name: filter
+          description: get keys starting with filter value
+          required: false
           schema:
             type: string
       responses:

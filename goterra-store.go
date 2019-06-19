@@ -295,6 +295,22 @@ var DeploymentGetKeysHandler = func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(respError)
 		return
 	}
+
+	// Return only elts starting with filter query param
+	filter, ok := r.URL.Query()["filter"]
+	if ok && len(filter) == 1 {
+		filteredValues := make(map[string]string)
+		for key, val := range values {
+			if strings.HasPrefix(key, filter[0]) {
+				filteredValues[key] = val
+			}
+		}
+		w.Header().Add("Content-Type", "application/json")
+		resp := map[string]interface{}{"deployment": filteredValues}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
 	w.Header().Add("Content-Type", "application/json")
 	resp := map[string]interface{}{"deployment": values}
 	json.NewEncoder(w).Encode(resp)
