@@ -10,9 +10,11 @@ script:
 - go vet
 - go test -v ./...
 - if [ "${LATEST}" = "true" ]; then GOOS=linux GOARCH=amd64 go build -ldflags "-X
-  main.Version=`git rev-parse --short HEAD`" -o goterra-store.linux.amd64 goterra-store.go; fi
+  main.Version=`git rev-parse --short HEAD`" -o goterra-store.linux.amd64 goterra-store.go;
+  fi
 - if [ "${LATEST}" = "true" ]; then GOOS=darwin GOARCH=amd64 go build -ldflags "-X
-  main.Version=`git rev-parse --short HEAD`" -o goterra-store.darwin.amd64 goterra-store.go; fi
+  main.Version=`git rev-parse --short HEAD`" -o goterra-store.darwin.amd64 goterra-store.go;
+  fi
 - if [ "${LATEST}" = "true" ]; then GOOS=windows GOARCH=amd64 go build -ldflags "-X
   main.Version=`git rev-parse --short HEAD`" -o goterra-store.windows.amd64.exe goterra-store.go;
   fi
@@ -29,14 +31,14 @@ deploy:
   provider: releases
   skip_cleanup: true
   api_key:
-    secure: BoL/n3mT0C7ypbsifaeJsHv7bJiNp1nlr9kqPlo9Twl95lHEPdiyAY7MdOfuufW+IIiDhmgghPsCNcJMCArIvicAAH1JyKy6aLCqoN1pejZKxcSVHxbY34aZKr3v91pr49Tyl+BXnPw6s3JgyJ/UIVYZjFucOZpL+c9kF9REUwSoYxZqte+pJ+N1ZPjSNY0VouBlCYJqxBrP1PdZpZTxeGTiZGsKw9gU+UGdF6+rQWBCH5VeqcaHyLQfYLsDMwz5riL+9hKvs9DAatLkOk81GGaAaRHJxY61dGjptpoHx2zdlCbJPZIw1dh4/YxRaEyPrAb8TBNKqm6rbf0lOysBvJ4jmyfDqutnLrnGauDfxUy+FivuzxzkYryH+goGmUFNrxeNc73706sDYO1ouD+ts1gpnRRR2KbB9KR3naE6HK09jLZN5iIXaciqi95DJ0SKCK9wNN89YU1i/nuIqUAMydzrMRKUPgOup7ATlevroNVJ4VjR6gwZVmTrfWiDcJe0Ll+sfizDrzw8XAza+wZowGyB33goeZpVOgwZJ0WKD4zyAAhhzy55mP9gzKZo/yIBJcSzAsSebUa9dGFbyH1NqFjyCFirFwhCxx0+YwoEBL/L7LvkWpAXmYzmCrECESCAmaURs37a7hprIeJkfWFt1JTuG7EKjBix1KYyRN0EffY=
+    secure: KmXVtFYihhdd1kGV/l9kEiGV52Tu31vtyyuyynSW1n2svKP1kcKC2FqHkgyWorVlIJU3aTqzs+iuOpPZr4jGHGh4X3rF8QMA/WMtD+qLSAS+MmMNsMmso2P9UUeiSJIOqLG2mJgpzBUfDoRSrCY07b8jmrcO3scu++xpeITUSDNxjxECMU3qYtCsdufSJcoNCyQIm6UWEuBzjhvpqnw+CUJhM9236jfq4k3yU6mDhs8c1XFNIJo4N3e0nlIv2JVF9t2JQSnOxca93WXIay33BZbECt3ArAPyUjlYNMphFuhrJJh3rZR+tpKqDvQjiaLzhVijcv+sQ0U3GGuC6Qm3ZUb4pnodgxDXxSsXNiqKory479JaSUPxI8s36FgqkJD+KNpxkXM9hqFDrNn/MnkIBT+VL7GtaCNDajuJ73ZUShpxxfRkbv5lpVGvXArxkibtDbbaObMxASU7eTsEBCdrRC2LB8se3ZPaueWRareLun/tgH9BhMDiCk39p0tjVT4dzP+3zWcTYF33Ds3rCmzSKB4n0NEdTPNJIqrUSN/0MDANWyjkn7lf1T+YvL22UkWZDRXqXAINnQ+o1RxwdlLISqMio3GYSoyu9E+lmj2RXPzSp/L4F1XGZeIbAEL3Wy7kxuOaPvnXoXqBxXFICisRKtcDJLhCrTsaf3nqgGtGxNk=
   file:
-          - goterra.linux.amd64
+          - goterra-store.linux.amd64
           - goterra-cli.linux.amd64
-          - goterra.darwin.amd64
+          - goterra-store.darwin.amd64
           - goterra-cli.darwin.amd64
-          - goterra.windows.amd64.exe
+          - goterra-store.windows.amd64.exe
           - goterra-cli.windows.amd64.exe
   on:
-    repo: osallou/goterra
+    repo: osallou/goterra-store
     tags: true
