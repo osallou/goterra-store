@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 
 	terraConfig "github.com/osallou/goterra-lib/lib/config"
 	terraDb "github.com/osallou/goterra-lib/lib/db"
@@ -339,7 +340,17 @@ func main() {
 	r.HandleFunc("/store/{deployment}", DeploymentDeleteHandler).Methods("DELETE")
 	r.HandleFunc("/store/{deployment}/{key}", DeploymentGetHandler).Methods("GET")
 
-	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+		AllowedHeaders:   []string{"Authorization"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		Debug:            true,
+	})
+
+	handler := c.Handler(r)
+
+	loggedRouter := handlers.LoggingHandler(os.Stdout, handler)
 
 	srv := &http.Server{
 		Handler: loggedRouter,

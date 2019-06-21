@@ -143,6 +143,14 @@
   revision = "21b1c8b699fafab0f1670a2d8b56861ba4d54950"
 
 [[projects]]
+  digest = "1:b0c25f00bad20d783d259af2af8666969e2fc343fa0dc9efe52936bbd67fb758"
+  name = "github.com/rs/cors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "9a47f48565a795472d43519dd49aac781f3034fb"
+  version = "v1.6.0"
+
+[[projects]]
   digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -162,6 +170,7 @@
     "github.com/osallou/goterra-lib/lib/db",
     "github.com/osallou/goterra-lib/lib/token",
     "github.com/osallou/goterra-lib/lib/user",
+    "github.com/rs/cors",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
