@@ -336,7 +336,7 @@ func main() {
 	r.HandleFunc("/store", DeploymentHandler).Methods("POST")
 	r.HandleFunc("/store/{deployment}", DeploymentGetKeysHandler).Methods("GET")
 	r.HandleFunc("/store/{deployment}", DeploymentUpdateHandler).Methods("PUT")
-	r.HandleFunc("/store/{deployment}", DeploymentGetKeysHandler).Methods("GET")
+	//r.HandleFunc("/store/{deployment}", DeploymentGetKeysHandler).Methods("GET")
 	r.HandleFunc("/store/{deployment}", DeploymentDeleteHandler).Methods("DELETE")
 	r.HandleFunc("/store/{deployment}/{key}", DeploymentGetHandler).Methods("GET")
 
