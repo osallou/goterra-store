@@ -5,7 +5,7 @@ info:
   version: 0.0.1
   
 servers:
-  - url: http://localhost:8000
+  - url: https://goterra.genouest.org
     description: test server
 
 components:
