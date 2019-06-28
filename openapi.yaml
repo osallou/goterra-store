@@ -6,7 +6,6 @@ info:
   
 servers:
   - url: https://goterra.genouest.org
-    description: test server
 
 components:
   securitySchemes:
