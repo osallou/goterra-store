@@ -50,28 +50,28 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:664d37ea261f0fc73dd17f4a1f5f46d01fbb0b0d75f6375af064824424109b7d"
+  digest = "1:bf3f2edc757b0fcee5946f9c88c3531b3766cde4195f9c5956fc4a84b72b0699"
   name = "github.com/gorilla/handlers"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7e0847f9db758cdebd26c149d0ae9d5d0b9c98ce"
-  version = "v1.4.0"
+  revision = "415c4810185c26aa35ca0315470d77697000794b"
+  version = "v1.4.1"
 
 [[projects]]
-  digest = "1:3af6be4fee7c08f81f13d36f04ffb63ad4b6b5aaba12cce96095c7c2863d4912"
+  digest = "1:cbec35fe4d5a4fba369a656a8cd65e244ea2c743007d8f6c1ccb132acf9d1296"
   name = "github.com/gorilla/mux"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ed099d42384823742bba0bf9a72b53b55c9e2e38"
-  version = "v1.7.2"
+  revision = "00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15"
+  version = "v1.7.3"
 
 [[projects]]
-  digest = "1:3db4f016af6ec500e79f6987c6ad284143b21effd504a2a8462be6c41b8198f5"
+  digest = "1:8b20ed6a6df0628913a69e4c1709537b2e26c7be4aca856bf52b431cf1ce6d90"
   name = "github.com/hashicorp/consul"
   packages = ["api"]
   pruneopts = "UT"
-  revision = "40cec98468b829e5cdaacb0629b3e23a028db688"
-  version = "v1.5.1"
+  revision = "a82e6a7fd33a0d05b9b871bcaf1d7595c9b8dedc"
+  version = "v1.5.2"
 
 [[projects]]
   digest = "1:af105c7c5dc0b4ae41991f122cae860b9600f7d226072c2a83127048c991660c"
@@ -131,7 +131,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2157a2692e9a8844b0f4101020c3ed44390878d331651b6db2d98b66bc14efd9"
+  digest = "1:d7fb8f9c9e0064e3616e1734f956e28c94af9ff1cc97db420981cc523dbf234e"
   name = "github.com/osallou/goterra-lib"
   packages = [
     "lib/config",
@@ -140,7 +140,7 @@
     "lib/user",
   ]
   pruneopts = "UT"
-  revision = "21b1c8b699fafab0f1670a2d8b56861ba4d54950"
+  revision = "294d0c4873a85b5aa21b0fd53db40d0ff19a6e64"
 
 [[projects]]
   digest = "1:b0c25f00bad20d783d259af2af8666969e2fc343fa0dc9efe52936bbd67fb758"
